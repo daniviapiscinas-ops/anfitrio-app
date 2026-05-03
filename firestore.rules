@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function uid()      { return request.auth.uid; }
+    function loggedIn() { return request.auth != null; }
+
+    function perfil() {
+      return get(/databases/$(database)/documents/cuentas/$(myCuentaId())/usuarios/$(uid())).data;
+    }
+    function myCuentaId() {
+      return get(/databases/$(database)/documents/usuariosCuentaIndex/$(uid())).data.cuentaId;
+    }
+    function isOwner() {
+      return loggedIn() && perfil().rol == 'propietario';
+    }
+    function isEmpleada() {
+      return loggedIn() && perfil().rol == 'empleada';
+    }
+    function misViviendas() {
+      return perfil().viviendas; // array de viviendaIds asignadas
+    }
+
+    // ── Índice uid → cuentaId (para que las empleadas puedan encontrar su cuenta) ──
+    // Solo se escribe al registrarse, no se puede modificar
+    match /usuariosCuentaIndex/{uid} {
+      allow read:   if loggedIn() && request.auth.uid == uid;
+      allow create: if loggedIn() && request.auth.uid == uid;
+      allow update, delete: if false;
+    }
+
+    // ── /cuentas/{cuentaId} ───────────────────────────────────────────
+    match /cuentas/{cuentaId} {
+      allow read:   if loggedIn() && myCuentaId() == cuentaId;
+      allow create: if loggedIn();
+      allow update: if loggedIn() && myCuentaId() == cuentaId && isOwner();
+      allow delete: if false;
+
+      // ── Viviendas — solo el propietario crea/edita/borra ─────────────
+      match /viviendas/{viviendaId} {
+        allow read:   if loggedIn() && myCuentaId() == cuentaId;
+        allow write:  if loggedIn() && myCuentaId() == cuentaId && isOwner();
+      }
+
+      // ── Usuarios de la cuenta ─────────────────────────────────────────
+      match /usuarios/{userId} {
+        // Propietario lee/gestiona todos; empleada solo lee su propio perfil
+        allow read:   if loggedIn() && myCuentaId() == cuentaId && (isOwner() || uid() == userId);
+        allow create: if loggedIn() && myCuentaId() == cuentaId && isOwner();
+        allow update: if loggedIn() && myCuentaId() == cuentaId && (isOwner() || uid() == userId);
+        allow delete: if loggedIn() && myCuentaId() == cuentaId && isOwner();
+      }
+
+      // ── Checkouts ─────────────────────────────────────────────────────
+      match /checkouts/{checkoutId} {
+        // Propietario ve todos; empleada solo ve los de sus viviendas asignadas
+        allow read: if loggedIn() && myCuentaId() == cuentaId && (
+          isOwner() ||
+          (isEmpleada() && resource.data.viviendaId in misViviendas())
+        );
+        // Empleada solo crea checkouts de viviendas asignadas a ella
+        allow create: if loggedIn() && myCuentaId() == cuentaId &&
+          request.resource.data.viviendaId in misViviendas() &&
+          request.resource.data.uid == uid();
+        // Solo puede editar sus propios checkouts (o el propietario todos)
+        allow update: if loggedIn() && myCuentaId() == cuentaId && (
+          isOwner() || (resource.data.uid == uid())
+        );
+        allow delete: if loggedIn() && myCuentaId() == cuentaId && isOwner();
+      }
+    }
+
+    // Bloquear todo lo demás
+    match /{doc=**} {
+      allow read, write: if false;
+    }
+  }
+}
