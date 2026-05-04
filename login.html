@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Anfitrio — Acceso</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  :root{--bg:#f7faf7;--surface:#fff;--ink:#1c2b1c;--ink-muted:#8fa08f;--green:#2a7a3b;--green-mid:#3da354;--green-lt:#eaf6ec;--red:#b52a2a;--red-lt:#fdf0f0;--border:#e2ebe2;--border-mid:#ccdacc;--font:'Plus Jakarta Sans',system-ui,sans-serif}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:16px;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 28px 32px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(42,122,59,.10)}
+  .brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:26px}
+  .logo{width:48px;height:48px;filter:drop-shadow(0 2px 6px rgba(42,122,59,.2))}
+  .name{font-size:1.5rem;font-weight:700;letter-spacing:-.03em;color:var(--ink)}
+  .name em{color:var(--green-mid);font-style:normal}
+  .tag{font-size:.65rem;font-weight:600;color:var(--ink-muted);letter-spacing:.09em;text-transform:uppercase}
+  .tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px;margin-bottom:24px;border:1px solid var(--border)}
+  .tab{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;font-family:var(--font);font-size:.85rem;font-weight:600;color:var(--ink-muted);cursor:pointer;transition:all .2s}
+  .tab.active{background:var(--surface);color:var(--green);box-shadow:0 1px 6px rgba(42,122,59,.12)}
+  .panel{display:none}.panel.active{display:block}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+  label{font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-muted)}
+  input,select{font-family:var(--font);font-size:.95rem;font-weight:500;background:var(--bg);border:1.5px solid var(--border-mid);border-radius:12px;padding:11px 14px;width:100%;color:var(--ink);transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+  input:focus,select:focus{outline:none;border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(61,163,84,.14)}
+  .btn-main{width:100%;padding:14px;border:none;border-radius:12px;background:var(--green);color:#fff;font-family:var(--font);font-size:.95rem;font-weight:700;cursor:pointer;margin-top:6px;transition:filter .15s,transform .15s}
+  .btn-main:active{transform:scale(.97);filter:brightness(.92)}
+  .btn-main:disabled{opacity:.6;cursor:not-allowed}
+  .btn-back{background:none;border:none;color:var(--green);font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;padding:0;margin-top:12px}
+  .msg{border-radius:10px;padding:10px 14px;font-size:.82rem;margin-top:10px;display:none}
+  .msg.show{display:block}
+  .msg.error{background:var(--red-lt);border:1px solid rgba(181,42,42,.2);color:var(--red)}
+  .msg.ok{background:var(--green-lt);border:1px solid var(--border-mid);color:var(--green)}
+  .steps{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:20px}
+  .step{width:28px;height:28px;border-radius:50%;border:2px solid var(--border-mid);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--ink-muted);transition:all .3s}
+  .step.active{border-color:var(--green);background:var(--green);color:#fff}
+  .step.done{border-color:var(--green-mid);background:var(--green-lt);color:var(--green)}
+  .step-line{flex:1;height:2px;background:var(--border);border-radius:1px;max-width:40px;transition:background .3s}
+  .step-line.done{background:var(--green-mid)}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .forgot{text-align:center;margin-top:14px;font-size:.8rem;color:var(--ink-muted)}
+  .forgot a{color:var(--green);text-decoration:none;font-weight:600}
+  .version{font-size:.65rem;color:var(--ink-muted);text-align:center;margin-top:24px;opacity:.6}
+  @media(max-width:480px){.card{padding:28px 18px 24px}}
+  @media(prefers-color-scheme:dark){:root{--bg:#111a11;--surface:#1a2a1a;--ink:#e8f4e8;--ink-muted:#6a8a6a;--green:#5dc478;--green-mid:#4db868;--green-lt:#1e3a24;--red:#e06060;--red-lt:#2a1212;--border:#2a3e2a;--border-mid:#3a5a3a}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 46 46" fill="none">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4fc066"/><stop offset="100%" stop-color="#2a7a3b"/></linearGradient></defs>
+      <rect width="46" height="46" rx="13" fill="url(#g1)"/>
+      <circle cx="15" cy="15" r="6" stroke="white" stroke-width="2.2" fill="none"/>
+      <circle cx="15" cy="15" r="2.2" fill="white" opacity="0.4"/>
+      <line x1="19.2" y1="19.2" x2="29" y2="29" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="25.5" y1="29" x2="25.5" y2="32.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="29" y1="29" x2="32.5" y2="29" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="31" cy="31" r="9.5" fill="white" opacity="0.18"/>
+      <circle cx="31" cy="31" r="9.5" stroke="white" stroke-width="1.6" fill="none" opacity="0.55"/>
+      <polyline points="26.2,31 29.4,34.4 35.8,27.6" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div><div class="name">Anfit<em>rio</em></div><div class="tag">Gestión de cambio</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login"    onclick="switchTab('login')">Iniciar sesión</button>
+    <button class="tab"        id="tab-registro"  onclick="switchTab('registro')">Crear cuenta</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="panel active" id="panel-login">
+    <div class="field"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="tu@correo.com" autocomplete="email"></div>
+    <div class="field"><label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-main" id="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="msg error" id="login-msg"></div>
+    <div class="forgot"><a href="#" onclick="doReset()">¿Olvidaste tu contraseña?</a></div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="panel" id="panel-registro">
+    <div class="steps">
+      <div class="step active" id="s1">1</div><div class="step-line" id="sl1"></div>
+      <div class="step"        id="s2">2</div><div class="step-line" id="sl2"></div>
+      <div class="step"        id="s3">✓</div>
+    </div>
+
+    <!-- Paso 1: nombre empresa o acceso empleada -->
+    <div id="reg-p1">
+      <div class="field"><label>¿Eres propietario o empleada?</label></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <label id="tipo-prop" style="border:2px solid var(--green);background:var(--green-lt);border-radius:12px;padding:12px;text-align:center;cursor:pointer;font-size:.88rem;font-weight:700;color:var(--green)" onclick="setTipo('prop')">
+          🏠 Soy propietario
+        </label>
+        <label id="tipo-emp" style="border:1.5px solid var(--border-mid);background:var(--bg);border-radius:12px;padding:12px;text-align:center;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--ink-muted)" onclick="setTipo('emp')">
+          👤 Soy empleada
+        </label>
+      </div>
+      <div id="campo-empresa">
+        <div class="field"><label>Nombre de tu empresa o negocio</label><input type="text" id="reg-empresa" placeholder="Ej: Gestión Pisos Costa" maxlength="60"></div>
+      </div>
+      <div id="aviso-emp" style="display:none;background:var(--green-xs);border:1px solid var(--border-mid);border-radius:10px;padding:12px 14px;font-size:.85rem;color:var(--ink-muted);line-height:1.5;margin-bottom:12px">
+        Tu propietario te habrá enviado un enlace a esta app. Registrate con el correo que él guardó y elige tu contraseña.
+      </div>
+      <button class="btn-main" onclick="regP1()">Siguiente →</button>
+      <div class="msg error" id="reg-msg1"></div>
+    </div>
+
+    <!-- Paso 2: datos acceso -->
+    <div id="reg-p2" style="display:none">
+      <div class="field"><label>Tu nombre completo</label><input type="text" id="reg-nombre" placeholder="Nombre y apellido" maxlength="60"></div>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="reg-email" placeholder="tu@correo.com" autocomplete="email"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+      <div class="field"><label>Repetir contraseña</label><input type="password" id="reg-pass2" placeholder="Repite la contraseña"></div>
+      <button class="btn-main" id="btn-reg" onclick="doRegistro()">Crear mi cuenta</button>
+      <div class="msg error" id="reg-msg2"></div>
+      <div style="text-align:center"><button class="btn-back" onclick="irPaso(1)">← Volver</button></div>
+    </div>
+
+    <!-- Paso 3: confirmación -->
+    <div id="reg-p3" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:3rem;margin-bottom:14px">🎉</div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">¡Cuenta creada!</div>
+      <div style="font-size:.88rem;color:var(--ink-muted);line-height:1.6;margin-bottom:20px">Redirigiendo a tu panel…</div>
+    </div>
+  </div>
+</div>
+<div class="version">Anfitrio v2.0</div>
+
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCkEGPF3G8ojNMHmgtmUlNgNQpqMOxMlgo",
+  authDomain:        "anfitrio-app.firebaseapp.com",
+  projectId:         "anfitrio-app",
+  storageBucket:     "anfitrio-app.firebasestorage.app",
+  messagingSenderId: "963136293931",
+  appId:             "1:963136293931:web:35d647947518a24f3d2e6e"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+let regEmpresa = '';
+
+// Auto-redirect si ya hay sesión
+onAuthStateChanged(auth, async user => {
+  if (!user) return;
+  try {
+    const idx = await getDoc(doc(db, 'usuariosCuentaIndex', user.uid));
+    if (!idx.exists()) return;
+    const cuentaId = idx.data().cuentaId;
+    const perfSnap = await getDoc(doc(db, 'cuentas', cuentaId, 'usuarios', user.uid));
+    if (!perfSnap.exists()) return;
+    const perfil = perfSnap.data();
+    sessionStorage.setItem('anfitrio_user', JSON.stringify({
+      uid: user.uid, email: user.email, nombre: perfil.nombre,
+      rol: perfil.rol, cuentaId, cuentaNombre: perfil.cuentaNombre || ''
+    }));
+    window.location.href = perfil.rol === 'propietario' ? 'admin.html' : 'index.html';
+  } catch(e) { /* perfil aún no existe */ }
+});
+
+// ── TABS ──────────────────────────────────────────────────────────────
+window.switchTab = t => {
+  ['login','registro'].forEach(p => {
+    document.getElementById('panel-'+p).classList.toggle('active', p===t);
+    document.getElementById('tab-'+p).classList.toggle('active', p===t);
+  });
+  clearMsgs();
+};
+
+// ── PASOS ─────────────────────────────────────────────────────────────
+window.irPaso = n => {
+  [1,2,3].forEach(i => {
+    document.getElementById('reg-p'+i).style.display = i===n?'block':'none';
+    const s = document.getElementById('s'+i); if(s) s.className='step'+(i<n?' done':i===n?' active':'');
+  });
+  document.getElementById('sl1').className='step-line'+(n>1?' done':'');
+  document.getElementById('sl2').className='step-line'+(n>2?' done':'');
+};
+
+window.setTipo = tipo => {
+  const esProp = tipo === 'prop';
+  document.getElementById('tipo-prop').style.border  = esProp ? '2px solid var(--green)' : '1.5px solid var(--border-mid)';
+  document.getElementById('tipo-prop').style.background = esProp ? 'var(--green-lt)' : 'var(--bg)';
+  document.getElementById('tipo-prop').style.color   = esProp ? 'var(--green)' : 'var(--ink-muted)';
+  document.getElementById('tipo-emp').style.border   = !esProp ? '2px solid var(--green)' : '1.5px solid var(--border-mid)';
+  document.getElementById('tipo-emp').style.background= !esProp ? 'var(--green-lt)' : 'var(--bg)';
+  document.getElementById('tipo-emp').style.color    = !esProp ? 'var(--green)' : 'var(--ink-muted)';
+  document.getElementById('campo-empresa').style.display = esProp ? 'block' : 'none';
+  document.getElementById('aviso-emp').style.display     = esProp ? 'none' : 'block';
+  window._tipoReg = tipo;
+};
+window._tipoReg = 'prop'; // por defecto propietario
+
+window.regP1 = () => {
+  if (window._tipoReg === 'emp') {
+    // Empleada: no necesita nombre de empresa, va directo al paso 2
+    regEmpresa = ''; clearMsgs(); irPaso(2); return;
+  }
+  const v = document.getElementById('reg-empresa').value.trim();
+  if (!v) { showMsg('reg-msg1','error','Escribe el nombre de tu empresa.'); return; }
+  regEmpresa = v; clearMsgs(); irPaso(2);
+};
+
+// ── REGISTRO ──────────────────────────────────────────────────────────
+window.doRegistro = async () => {
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const email  = document.getElementById('reg-email').value.trim();
+  const pass   = document.getElementById('reg-pass').value;
+  const pass2  = document.getElementById('reg-pass2').value;
+  const btn    = document.getElementById('btn-reg');
+  if (!nombre) { showMsg('reg-msg2','error','Escribe tu nombre.'); return; }
+  if (!email)  { showMsg('reg-msg2','error','Escribe tu correo.'); return; }
+  if (pass.length < 6) { showMsg('reg-msg2','error','Contraseña mínimo 6 caracteres.'); return; }
+  if (pass !== pass2)  { showMsg('reg-msg2','error','Las contraseñas no coinciden.'); return; }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creando cuenta…';
+  try {
+    // ── Comprobar si existe invitación para este email ─────────────────
+    // El propietario pudo haber creado una ficha previa para esta empleada
+    const emailKey  = email.toLowerCase().replace(/[^a-z0-9]/g,'-');
+    const invSnap   = await getDoc(doc(db, 'invitaciones', emailKey));
+    const invitada  = invSnap.exists() && !invSnap.data().usado;
+
+    const { user } = await createUserWithEmailAndPassword(auth, email, pass);
+
+    if (invitada) {
+      // ── EMPLEADA: usar los datos de la invitación ────────────────────
+      const inv = invSnap.data();
+      // Perfil dentro de la cuenta del propietario
+      await setDoc(doc(db, 'cuentas', inv.cuentaId, 'usuarios', user.uid), {
+        nombre:       inv.nombre,   // nombre que puso el propietario
+        email,
+        rol:          'empleada',
+        cuentaNombre: inv.cuentaNombre || '',
+        viviendas:    inv.viviendas  || [],
+        creado:       serverTimestamp()
+      });
+      // Índice uid → cuentaId
+      await setDoc(doc(db, 'usuariosCuentaIndex', user.uid), { cuentaId: inv.cuentaId });
+      // Marcar invitación como usada
+      await setDoc(doc(db, 'invitaciones', emailKey), { usado: true, uidEmpleada: user.uid }, { merge: true });
+
+    } else {
+      // ── PROPIETARIO NUEVO: crear su propia empresa ───────────────────
+      const cuentaId = regEmpresa.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+        .slice(0,28) + '-' + Date.now().toString(36);
+
+      await setDoc(doc(db, 'cuentas', cuentaId), {
+        nombre: regEmpresa, propietarioUID: user.uid, creado: serverTimestamp(), activo: true
+      });
+      await setDoc(doc(db, 'cuentas', cuentaId, 'usuarios', user.uid), {
+        nombre, email, rol: 'propietario',
+        cuentaNombre: regEmpresa, viviendas: [], creado: serverTimestamp()
+      });
+      await setDoc(doc(db, 'usuariosCuentaIndex', user.uid), { cuentaId });
+    }
+
+    irPaso(3);
+    // onAuthStateChanged gestiona el redirect según el rol
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Crear mi cuenta';
+    const msgs = {
+      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
+      'auth/invalid-email':        'Formato de correo no válido.',
+      'auth/weak-password':        'Contraseña demasiado débil.',
+    };
+    showMsg('reg-msg2','error', msgs[e.code] || e.message);
+  }
+};
+
+// ── LOGIN ─────────────────────────────────────────────────────────────
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('btn-login');
+  if (!email||!pass) { showMsg('login-msg','error','Completa todos los campos.'); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Entrando…'; clearMsgs();
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    btn.disabled=false; btn.textContent='Entrar';
+    const msgs={'auth/user-not-found':'Correo no registrado.','auth/wrong-password':'Contraseña incorrecta.','auth/invalid-credential':'Correo o contraseña incorrectos.','auth/too-many-requests':'Demasiados intentos. Espera.'};
+    showMsg('login-msg','error',msgs[e.code]||e.message);
+  }
+};
+
+// ── RESET PASSWORD ────────────────────────────────────────────────────
+window.doReset = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showMsg('login-msg','error','Escribe tu correo arriba primero.'); return; }
+  try { await sendPasswordResetEmail(auth,email); showMsg('login-msg','ok','✅ Correo enviado a '+email); }
+  catch(e) { showMsg('login-msg','error','No se pudo enviar el correo.'); }
+};
+
+function showMsg(id,type,txt){ const el=document.getElementById(id); el.textContent=txt; el.className='msg '+type+' show'; }
+function clearMsgs(){ document.querySelectorAll('.msg').forEach(m=>m.classList.remove('show')); }
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('panel-login').classList.contains('active')) window.doLogin(); });
+</script>
+</body>
+</html>
